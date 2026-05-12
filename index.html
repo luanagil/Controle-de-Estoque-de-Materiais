@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Estoque de Materiais</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="toast-container"></div>
+
+    <div class="container">
+        <h1>Controle de Estoque de Materiais</h1>
+
+        <div class="accessibility-buttons no-print" style="margin-bottom: 20px; display: flex; justify-content: center; gap: 10px;">
+            <button class="font-button" id="increase-font" title="Aumentar Fonte">A+</button>
+            <button class="font-button" id="decrease-font" title="Diminuir Fonte">A-</button>
+            <button class="font-button" id="contrast-button" title="Alternar Contraste" style="display: inline-flex; align-items: center; gap: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14v12c-3.31 0-6-2.69-6-6s2.69-6 6-6z"/>
+                </svg>
+            </button>
+        </div>
+
+        <div id="login-section" class="section">
+            <h2>Acesso ao Sistema</h2>
+            <div class="input-group">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" placeholder="Digite seu e-mail">
+                <label for="password">Senha</label>
+                <input type="password" id="password" placeholder="Digite sua senha">
+            </div>
+            <button id="login-button" style="width: 100%; margin-top: 15px;">Entrar</button>
+            <p id="login-error-message" style="color: var(--danger); font-size: 14px; margin-top: 10px;"></p>
+        </div>
+
+        <div id="inventory-section" class="section hidden">
+            <h2 id="form-title">Cadastrar Novo Item</h2>
+            
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>Nome do Item</label>
+                    <input type="text" id="item-name" placeholder="Ex: Joelho 90º PVC">
+                </div>
+                <div class="input-group">
+                    <label>Categoria</label>
+                    <select id="item-category">
+                        <option value="">Selecione...</option>
+                        <option value="Tubulações">Tubulações</option>
+                        <option value="Válvulas">Válvulas</option>
+                        <option value="Conexões">Conexões</option>
+                        <option value="Bombas">Bombas</option>
+                        <option value="Vedações">Vedações</option>
+                        <option value="Filtros">Filtros</option>
+                        <option value="Mangueiras">Mangueiras</option>
+                        <option value="Acessórios">Acessórios</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Unidade</label>
+                    <select id="item-unit">
+                        <option value="un">un</option>
+                        <option value="m">m</option>
+                        <option value="kg">kg</option>
+                        <option value="L">L</option>
+                        <option value="cx">cx</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Qtd. Atual</label>
+                    <input type="number" id="item-current" value="0">
+                </div>
+                <div class="input-group">
+                    <label>Qtd. Mínima</label>
+                    <input type="number" id="item-minimum" value="0">
+                </div>
+                <div class="input-group">
+                    <label>Prateleira</label>
+                    <select id="item-shelf">
+                        <option value="A">Prateleira A</option>
+                        <option value="B">Prateleira B</option>
+                        <option value="C">Prateleira C</option>
+                        <option value="D">Prateleira D</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Caixa</label>
+                    <select id="item-box">
+                        <option value="1">Caixa 1</option>
+                        <option value="2">Caixa 2</option>
+                        <option value="3">Caixa 3</option>
+                        <option value="4">Caixa 4</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="add-item-button">Adicionar Item</button>
+            <button id="cancel-edit-button" class="hidden" onclick="finalizarEdicao()" style="background: var(--text-light); margin-top:10px">Cancelar Edição</button>
+
+            <hr style="margin: 30px 0; border: 0; border-top: 1px solid var(--border);">
+
+            <div class="inventory-table-container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                    <h3 style="margin: 0;">Lista de Materiais</h3>
+                    
+                    <div class="export-buttons no-print" style="display: flex; gap: 8px;">
+                        <button onclick="gerarLinkIntegracao()" style="background-color: var(--primary); padding: 8px 15px; font-size: 13px; color: white; border: none; border-radius: 4px; cursor: pointer;">🔗 Gerar Link de Integração</button>
+                        
+                        <button onclick="exportarExcel()" style="background-color: var(--success); padding: 8px 15px; font-size: 13px;">📊 Excel</button>
+                        <button onclick="gerarPDF()" style="background-color: var(--text); padding: 8px 15px; font-size: 13px;">📄 PDF / Imprimir</button>
+                    </div>
+                </div>
+                
+                <div class="filter-bar no-print">
+                    <input type="text" id="search-input" placeholder="🔍 Buscar por nome do item...">
+                    
+                    <select id="filter-category">
+                        <option value="">Todas Categorias</option>
+                        <option value="Tubulações">Tubulações</option>
+                        <option value="Válvulas">Válvulas</option>
+                        <option value="Conexões">Conexões</option>
+                        <option value="Bombas">Bombas</option>
+                        <option value="Vedações">Vedações</option>
+                        <option value="Filtros">Filtros</option>
+                        <option value="Mangueiras">Mangueiras</option>
+                        <option value="Acessórios">Acessórios</option>
+                    </select>
+
+                    <select id="filter-shelf">
+                        <option value="">Todos Locais</option>
+                        <option value="A">Prateleira A</option>
+                        <option value="B">Prateleira B</option>
+                        <option value="C">Prateleira C</option>
+                        <option value="D">Prateleira D</option>
+                    </select>
+                </div>
+
+                <div class="table-scroll">
+                    <table id="inventory-table">
+                        <thead>
+                            <tr>
+                                <th onclick="sortItems('name')" style="cursor:pointer">Item ↕</th>
+                                <th>Categoria</th>
+                                <th>Un.</th>
+                                <th onclick="sortItems('current')" class="text-center" style="cursor:pointer">Estoque Atual ↕</th>
+                                <th class="text-center">Mín.</th>
+                                <th>Local</th>
+                                <th class="no-print">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="items-table-body">
+                            <tr><td colspan="7" style="text-align:center">Carregando dados...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-container no-print">
+                    <button class="btn-pagination" id="prev-page" onclick="mudarPagina(-1)">Anterior</button>
+                    <span id="page-info">Página 1 de 1</span>
+                    <button class="btn-pagination" id="next-page" onclick="mudarPagina(1)">Próximo</button>
+                </div>
+            </div>
+
+            <button id="logout-button" style="background-color: var(--text-light); margin-top: 30px;">Sair do Sistema</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="main.js"></script>
+
+    <script>
+        function gerarLinkIntegracao() {
+            // Tenta obter a lista de itens da variável global 'items' (comumente usada em sistemas com Firebase/main.js)
+            // Caso não exista, tenta ler os dados diretamente da tabela HTML
+            let dadosParaExportar = [];
+            
+            if (typeof items !== 'undefined' && items.length > 0) {
+                dadosParaExportar = items;
+            } else {
+                // Fallback: Lê os dados da tabela caso a variável global não esteja acessível
+                const rows = document.querySelectorAll("#items-table-body tr");
+                rows.forEach(row => {
+                    const cols = row.querySelectorAll("td");
+                    if (cols.length > 1) {
+                        dadosParaExportar.push({
+                            item: cols[0].innerText,
+                            categoria: cols[1].innerText,
+                            unidade: cols[2].innerText,
+                            estoque_atual: cols[3].innerText,
+                            estoque_minimo: cols[4].innerText,
+                            local: cols[5].innerText
+                        });
+                    }
+                });
+            }
+
+            if (dadosParaExportar.length === 0 || (dadosParaExportar.length === 1 && dadosParaExportar[0].item === undefined)) {
+                alert("Não há dados disponíveis para exportar.");
+                return;
+            }
+
+            const dataStr = JSON.stringify(dadosParaExportar, null, 4);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "estoque_api_endpoint.json";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Feedback visual (Toast ou Alert)
+            alert("Arquivo JSON gerado com sucesso! Este arquivo pode ser usado para integração com outros sistemas.");
+        }
+    </script>
+</body>
+</html>
